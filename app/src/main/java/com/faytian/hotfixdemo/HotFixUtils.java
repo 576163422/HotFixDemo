@@ -35,7 +35,7 @@ class HotFixUtils {
         String dirPath = AppApplication.appApplication.getCacheDir().getAbsolutePath();
         String apkPath = dirPath + "/patch.jar";
 
-        //方式一: 创新新的类加载器, 传入路径 todo (如果 内部类 和 外部类不是同一个classloader， 会导致 dex2opt 优化失败)
+        //方式一: 创新新的类加载器, 传入路径 todo (dalvik虚拟机（5.0以下）如果 内部类 和 外部类不是同一个classloader， 会导致 dexopt 优化失败)
         //        PathClassLoader dexClassLoader = new PathClassLoader(apkPath, null, classLoader);
         //        Object pluginPathList = pathListField.get(dexClassLoader);
         //        Object[] patchDexElements = (Object[]) dexElementsField.get(pluginPathList);
