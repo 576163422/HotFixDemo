@@ -1,7 +1,9 @@
 package com.faytian.hotfixdemo;
 
+import android.os.Build;
 import android.util.Log;
 
+import com.faytian.hotfixdemo.utils.ClassLoaderInjector;
 import com.faytian.hotfixdemo.utils.ReflectUtil;
 
 import java.io.File;
@@ -17,9 +19,21 @@ import dalvik.system.PathClassLoader;
 class HotFixUtils {
 
 
-    static void installPatch() throws Exception {
+    static void installPatch(File patchFile) throws Exception {
         // 1、获取程序的PathClassLoader对象
         ClassLoader classLoader = AppApplication.appApplication.getClassLoader();
+        List<File> patchList = new ArrayList<>();
+        if (patchFile.exists()) {
+            patchList.add(patchFile);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                //7.0及以上替换 PathClassLoader的同时，也会把补丁包里的类进行加载，所以无需后续操作
+                ClassLoaderInjector.inject(AppApplication.appApplication, classLoader, patchList);
+            } catch (Throwable throwable) {
+            }
+            return;
+        }
 
         // 2、反射获得PathClassLoader父类BaseDexClassLoader的pathList对象
 //        Class classLoaderClazz = Class.forName("dalvik.system.BaseDexClassLoader");
@@ -39,9 +53,6 @@ class HotFixUtils {
         Object[] oldDexElements = (Object[]) dexElementsField.get(pathList);
 
         // 4、把补丁包变成Element数组：patchElement
-        String dirPath = AppApplication.appApplication.getCacheDir().getAbsolutePath();
-        String apkPath = dirPath + "/patch.jar";
-
         //方式一: 创新新的类加载器, 传入路径 todo (dalvik虚拟机（5.0以下）如果 内部类 和 外部类不是同一个classloader， 会导致 dexopt 优化失败)
         //        PathClassLoader dexClassLoader = new PathClassLoader(apkPath, null, classLoader);
         //        Object pluginPathList = pathListField.get(dexClassLoader);
@@ -54,9 +65,7 @@ class HotFixUtils {
 //        method.setAccessible(true);
         //使用工具类，没有找到时，不断向上去父类寻找
         Method method = ReflectUtil.findMethod(pathList, "makePathElements", List.class, File.class, List.class);
-        List<File> result = new ArrayList<>();
-        result.add(new File(apkPath));
-        Object[] patchDexElements = (Object[]) method.invoke(null, result, new File(dirPath), null);
+        Object[] patchDexElements = (Object[]) method.invoke(null, patchList, patchFile, null);
 
 
         // 5、合并patchElement+oldElement = newElement （Array.newInstance）
