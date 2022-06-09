@@ -2,10 +2,13 @@ package com.faytian.hotfixdemo;
 
 import android.util.Log;
 
+import com.faytian.hotfixdemo.utils.ReflectUtil;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,19 +19,23 @@ class HotFixUtils {
 
     static void installPatch() throws Exception {
         // 1、获取程序的PathClassLoader对象
-        PathClassLoader classLoader = (PathClassLoader) AppApplication.appApplication.getClassLoader();
+        ClassLoader classLoader = AppApplication.appApplication.getClassLoader();
 
         // 2、反射获得PathClassLoader父类BaseDexClassLoader的pathList对象
-        Class classLoaderClazz = Class.forName("dalvik.system.BaseDexClassLoader");
-        Field pathListField = classLoaderClazz.getDeclaredField("pathList");
-        pathListField.setAccessible(true);
+//        Class classLoaderClazz = Class.forName("dalvik.system.BaseDexClassLoader");
+//        Field pathListField = classLoaderClazz.getDeclaredField("pathList");
+//        pathListField.setAccessible(true);
+        //使用工具类，没有找到时，不断向上去父类寻找
+        Field pathListField = ReflectUtil.findField(classLoader, "pathList");
         Object pathList = pathListField.get(classLoader);
 
 
         // 3、反射获取pathList的dexElements对象 （oldElement）
-        Class pathListClass = Class.forName("dalvik.system.DexPathList");
-        Field dexElementsField = pathListClass.getDeclaredField("dexElements");
-        dexElementsField.setAccessible(true);
+//        Class pathListClass = Class.forName("dalvik.system.DexPathList");
+//        Field dexElementsField = pathListClass.getDeclaredField("dexElements");
+//        dexElementsField.setAccessible(true);
+        //使用工具类，没有找到时，不断向上去父类寻找
+        Field dexElementsField = ReflectUtil.findField(pathList, "dexElements");
         Object[] oldDexElements = (Object[]) dexElementsField.get(pathList);
 
         // 4、把补丁包变成Element数组：patchElement
@@ -40,11 +47,15 @@ class HotFixUtils {
         //        Object pluginPathList = pathListField.get(dexClassLoader);
         //        Object[] patchDexElements = (Object[]) dexElementsField.get(pluginPathList);
 
-        //方式二:反射执行 DexPathList.makePathElements 方法
+        //方式二: 反射执行 DexPathList.makePathElements 方法
+//        List<File> result = new ArrayList<>();
+//        result.add(new File(apkPath));
+//        Method method = pathListClass.getDeclaredMethod("makePathElements", List.class, File.class, List.class);
+//        method.setAccessible(true);
+        //使用工具类，没有找到时，不断向上去父类寻找
+        Method method = ReflectUtil.findMethod(pathList, "makePathElements", List.class, File.class, List.class);
         List<File> result = new ArrayList<>();
         result.add(new File(apkPath));
-        Method method = pathListClass.getDeclaredMethod("makePathElements", List.class, File.class, List.class);
-        method.setAccessible(true);
         Object[] patchDexElements = (Object[]) method.invoke(null, result, new File(dirPath), null);
 
 
@@ -55,7 +66,5 @@ class HotFixUtils {
 
         // 6、反射把oldElement赋值成newElemen t
         dexElementsField.set(pathList, newDexElements);
-
-        Log.v("tyh", classLoader + "---");
     }
 }
