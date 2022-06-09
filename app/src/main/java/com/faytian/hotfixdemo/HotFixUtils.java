@@ -14,7 +14,7 @@ import dalvik.system.PathClassLoader;
 class HotFixUtils {
 
 
-    static void demo() throws Exception {
+    static void installPatch() throws Exception {
         // 1、获取程序的PathClassLoader对象
         PathClassLoader classLoader = (PathClassLoader) AppApplication.appApplication.getClassLoader();
 

@@ -17,7 +17,7 @@ public class AppApplication extends Application {
         super.onCreate();
         appApplication = this;
         try {
-            HotFixUtils.demo();
+            HotFixUtils.installPatch();
         } catch (Exception e) {
             e.printStackTrace();
         }
