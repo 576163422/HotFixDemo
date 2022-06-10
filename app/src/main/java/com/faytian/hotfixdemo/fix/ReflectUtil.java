@@ -1,4 +1,4 @@
-package com.faytian.hotfixdemo.utils;
+package com.faytian.hotfixdemo.fix;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

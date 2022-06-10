@@ -3,6 +3,9 @@ package com.faytian.hotfixdemo;
 import android.app.Application;
 import android.content.Context;
 
+
+import com.faytian.hotfixdemo.fix.HotFixUtils;
+
 import java.io.File;
 
 public class AppApplication extends Application {

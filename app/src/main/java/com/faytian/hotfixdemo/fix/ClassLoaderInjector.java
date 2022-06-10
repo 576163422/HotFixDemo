@@ -1,12 +1,10 @@
-package com.faytian.hotfixdemo.utils;
+package com.faytian.hotfixdemo.fix;
 
 
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
-
-import com.faytian.hotfixdemo.HotFixClassLoader;
 
 import java.io.File;
 import java.lang.reflect.Field;
