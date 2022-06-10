@@ -1,0 +1,61 @@
+
+非类替换
+AndFix:
+在native动态替换java层的方法，通过native层hook java层的代码。(文件java层无法操作方法中的每个属性)
+使用运行时注解，标记有bug的方法，生成dex文件。
+
+当客户端得到 dex文件后，类加载得到 class文件，通过反射遍历类中所有的方法。得到已修复的方法，再反射得到注解(MethodReplace注解)，
+通过注解信息知道需要修复方法，然后进行替换（替换注解中声明的方法）
+
+
+Robust:
+引入robust插件，插件会对代码里的每个方法都在编译阶段自动插入一段代码（字节码插桩）。在每个 class中插入一个 ChangeQuickRedirect静态属性，
+每个方法前都插入属性的判断，当属性不为 null时，执行修复后的代码。
+
+当客户端得到 dex文件后，类加载技术加载补丁包中的类，然后反射创建 ChangeQuickRedirect对象，赋值给class 中的静态属性。这样当调用到方法是就会命中 if条件
+
+类替换
+Tinker
+
+
+
+
+
+
+
+把class 打包成dex 或者 jar 的命令（先配置dx环境变量，dx位置：/home/ubuntu/Android/Sdk/build-tools/29.0.0）
+dx --dex --output=输出文件.dex 输入路径+文件.class
+例如：（进入的是classes文件夹）
+/MyProject/HotFixDemo/app/build/intermediates/javac/debug/classes$ dx --dex --output=patch.dex com/faytian/hotfixdemo/Utils.class
+
+
+
+兼容问题：
+1: https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286341&idx=1&sn=054d595af6e824cbe4edd79427fc2706&scene=0#wechat_redirect
+7.0及以上 需要进行替换 app的 PatchClassLoader
+
+为什么要替换ClassLoader？
+ART 是在 Android KitKat(Android 4.0)引入并在 Lollipop(Android 5.0)中设为默认运行环境,可以看作Dalvik2.0。
+ART模式在Android N(7.0)之前安装APK时会采用AOT(Ahead of time:提前编译、静态编译)预编译为机器码。
+
+而在Android 7.0使用混合模式的运行时。应用在安装时不做编译,而是运行时解释字节码，
+同时在JIT编译了一些代码后将这些代码信息记录至Profile文件，
+等到设备空闲的时候使用AOT(All-Of-the-Time compilation:全时段编译)编译生成称为app_image的base.art(类对象映像)文件，
+这个art文件会在apk启动时自动加载(相当于缓存)。根据类加载原理,类被加载了无法被替换,即无法修复。
+
+无论是使用插入 pathlist 还是parent classloader的方式，若补丁修改的class已经存在与app image，它们都是无法通过热补丁更新的。
+它们在启动app时已经加入到PathClassloader的ClassTable中，系统在查找类时会直接使用base.art中的 class。
+
+
+2: https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286341&idx=1&sn=054d595af6e824cbe4edd79427fc2706&scene=0#wechat_redirect
+在dalvik上，当一个类访持有的引用类都在同一个dex下时，会给该类打上 CLASS_ISPREVERIFIED标志，
+例如：MainActivity类中只引用了:Utils类。当打包dex时, MainActivity与Utils都在classes.dex中,则加载时MainActivity类被标记为 CLASS_ISPREVERIFIED，
+如果使用补丁包中的Utils类取代出现bug的Utils,则会导致MainActivity与其引用的Utils不在同一个Dex,但MainActivity已经被打上标记,此时出现冲突。导致校验失败!
+如何解决？
+只要引用了其他dex中类，就不会被打上CLASS_ISPREVERIFIED标志，所以只要让所有类都引用其他dex中的某个类就可以了。
+使用字节码插桩给所有类的构造方法里插入一行调用其他dex（hack.dex）中的class的方法。
+1.为什么是构造方法？因为类中肯定会有构造方法，即使我们没有手动添加，编译成class后也会自动生成空参构造
+2.为什么要用字节码插桩的方式增加调用其他类的代码？源码中手动插入不太可行，因为 此时并没有加载进来，AntilazyLoad.class并不存在，编译不通过。
+
+首先在源码中手动插入不太可行，hack.dex此时并没有加载进来，hack.dex中的class并不存在，编译不通过。所以我们需要在源码编译成字节码之后，在字节码中进行插入操作。
+
