@@ -47,7 +47,7 @@ ART模式在Android N(7.0)之前安装APK时会采用AOT(Ahead of time:提前编
 它们在启动app时已经加入到PathClassloader的ClassTable中，系统在查找类时会直接使用base.art中的 class。
 
 
-2: https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286341&idx=1&sn=054d595af6e824cbe4edd79427fc2706&scene=0#wechat_redirect
+2: https://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&mid=400118620&idx=1&sn=b4fdd5055731290eef12ad0d17f39d4a
 在dalvik上，当一个类访持有的引用类都在同一个dex下时，会给该类打上 CLASS_ISPREVERIFIED标志，
 例如：MainActivity类中只引用了:Utils类。当打包dex时, MainActivity与Utils都在classes.dex中,则加载时MainActivity类被标记为 CLASS_ISPREVERIFIED，
 如果使用补丁包中的Utils类取代出现bug的Utils,则会导致MainActivity与其引用的Utils不在同一个Dex,但MainActivity已经被打上标记,此时出现冲突。导致校验失败!
