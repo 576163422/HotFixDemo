@@ -1,7 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.patch.plugin'//com.patch.plugin.properties文件名，映射插件全路径
 }
+//apply plugin: com.faytian.plugin.PatchPlugin//因为插件直接在buildSrc，可以直接拿到类的引用，所以类的全路径可以引入插件
+
+PluginDemo.test()
+
+hotfix {
+    debugOn true
+    applicationName "com.faytian.hotfixdemo.AppApplication"
+}
+
 
 android {
     compileSdk 30
@@ -32,7 +42,6 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.5.0'
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'

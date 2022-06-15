@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.android.tools.build:gradle:7.0.3"//引入gradle插件，因为需要判断是否引入application插件
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
