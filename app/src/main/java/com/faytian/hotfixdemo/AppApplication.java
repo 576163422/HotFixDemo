@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 
-import com.faytian.hotfixdemo.fix.HotFixUtils;
+import com.example.patchlib.HotFixUtils;
 
 import java.io.File;
 
@@ -24,7 +24,7 @@ public class AppApplication extends Application {
         try {
             String dirPath = getCacheDir().getAbsolutePath();
             String patchDir = dirPath + "/patch.jar";
-            HotFixUtils.installPatch(new File(patchDir));
+            HotFixUtils.installPatch(appApplication, new File(patchDir));
         } catch (Exception e) {
             e.printStackTrace();
         }

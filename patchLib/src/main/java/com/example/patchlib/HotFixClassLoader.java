@@ -1,4 +1,4 @@
-package com.faytian.hotfixdemo.fix;
+package com.example.patchlib;
 
 import dalvik.system.PathClassLoader;
 

@@ -1,8 +1,8 @@
-package com.faytian.hotfixdemo.fix;
+package com.example.patchlib;
 
+import android.app.Application;
+import android.content.Context;
 import android.os.Build;
-
-import com.faytian.hotfixdemo.AppApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,14 +21,14 @@ public class HotFixUtils {
      *
      * @return
      */
-    public static File initHack() {
-        File hackFile = new File(AppApplication.appApplication.getExternalFilesDir(""), "hack.dex");
+    public static File initHack(Application application) {
+        File hackFile = new File(application.getExternalFilesDir(""), "hack.dex");
         FileOutputStream fos = null;
         InputStream is = null;
         try {
             fos = new FileOutputStream(hackFile);
 
-            is = AppApplication.appApplication.getAssets().open("hack.dex");
+            is = application.getAssets().open("hack.dex");
             int len;
             byte[] buffer = new byte[2048];
             while ((len = is.read(buffer)) != -1) {
@@ -57,19 +57,19 @@ public class HotFixUtils {
     }
 
 
-    public static void installPatch(File patchFile) throws Exception {
+    public static void installPatch(Application application, File patchFile) throws Exception {
         List<File> patchList = new ArrayList<>();
-        File hackFile = initHack();
+        File hackFile = initHack(application);
         patchList.add(hackFile);
         if (patchFile.exists()) {
             patchList.add(patchFile);
         }
         // 1、获取程序的PathClassLoader对象
-        ClassLoader classLoader = AppApplication.appApplication.getClassLoader();
+        ClassLoader classLoader = application.getClassLoader();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             try {
                 //7.0及以上替换 PathClassLoader的同时，也会把补丁包里的类进行加载，所以无需后续操作
-                ClassLoaderInjector.inject(AppApplication.appApplication, classLoader, patchList);
+                ClassLoaderInjector.inject(application, classLoader, patchList);
             } catch (Throwable throwable) {
             }
             return;
