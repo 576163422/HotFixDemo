@@ -13,15 +13,17 @@ hotfix {
 }
 
 
+def app_android = this.getRootProject().ext.app_android;
 android {
-    compileSdkVersion 30
+    compileSdkVersion app_android.compileSdkVersion
+    buildToolsVersion app_android.buildToolsVersion
 
     defaultConfig {
         applicationId "com.faytian.hotfixdemo"
-        minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion app_android.minSdkVersion
+        targetSdkVersion app_android.targetSdkVersion
+        versionCode app_android.versionCode
+        versionName app_android.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

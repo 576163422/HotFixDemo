@@ -1,0 +1,16 @@
+ext {
+
+    app_android = [
+            compileSdkVersion        : 28,
+            buildToolsVersion        : "29.0.2",
+            minSdkVersion            : 14,
+            targetSdkVersion         : 28,
+            versionCode              : 1,
+            versionName              : "1.0",
+    ]
+    // 定义依赖项，体现真实开发项目的过程
+    app_dependencies = [
+            "appcompat"      : 'androidx.appcompat:appcompat:1.1.0',
+            "constraint"     : 'androidx.constraintlayout:constraintlayout:1.1.3',
+    ]
+}
