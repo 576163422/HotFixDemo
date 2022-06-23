@@ -3,3 +3,8 @@
 /workspace.xml
 /git_toolbox_prj.xml
 /misc.xml
+/jarRepositories.xml
+/vcs.xml
+/compiler.xml
+/gradle.xml
+/codeStyles/
