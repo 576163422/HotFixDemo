@@ -94,8 +94,7 @@ public class PatchPlugin implements Plugin<Project> {
                         if (file.getName().endsWith("mapping.txt")) {
                             try {
                                 FileUtils.copyFile(file, mappingFile);
-                                project.getLogger().error("mapping: " + mappingFile.getCanonicalPath());
-
+                                project.getLogger().error("mapping: " + mappingFile.getCanonicalPath());//输出log
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

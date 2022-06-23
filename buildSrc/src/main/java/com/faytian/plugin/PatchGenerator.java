@@ -96,8 +96,9 @@ public class PatchGenerator {
                 execSpec.commandLine(dxPath, "--dex", patch, patchClassFile.getAbsolutePath());
             }
         });
+        //删除用于生成补丁包的jar
         patchClassFile.delete();
-        project.getLogger().error("\npatch generated in : " + patchDexFile);
+        project.getLogger().error("\npatch generated in : " + patchDexFile);//输出log
     }
 
 

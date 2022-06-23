@@ -113,7 +113,7 @@ public class HotFixUtils {
         System.arraycopy(patchDexElements, 0, newDexElements, 0, patchDexElements.length);
         System.arraycopy(oldDexElements, 0, newDexElements, patchDexElements.length, oldDexElements.length);
 
-        // 6、反射把oldElement赋值成newElemen t
+        // 6、反射把oldElement赋值成newElement
         dexElementsField.set(pathList, newDexElements);
     }
 }
