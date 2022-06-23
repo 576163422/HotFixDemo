@@ -5,6 +5,7 @@ import com.android.build.gradle.AppPlugin;
 import com.android.build.gradle.api.ApplicationVariant;
 import com.android.utils.FileUtils;
 import com.faytian.bean.HotFixExtBean;
+import com.faytian.utils.ClassUtil;
 import com.faytian.utils.PatchUtil;
 
 import org.gradle.api.Action;
@@ -16,6 +17,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.PluginContainer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -172,13 +174,11 @@ public class PatchPlugin implements Plugin<Project> {
 
 //                jarOutputStream.putNextEntry(new JarEntry(jarEntry.getName()));//todo
                 InputStream is = jarFile.getInputStream(jarEntry);//todo 从jar文件中获取
-
-
                 String className = jarEntry.getName();
                 if (className.endsWith(".class") && !className.contains(applicationName)
-                        && !PatchUtil.isAndroidClass(className) && !className.startsWith("com/example/patchlib")) {
-                    //可以进行热修复的class
-                    byte[] byteCode = is.readAllBytes();
+                        && !PatchUtil.isAndroidClass(className) && !className.startsWith("com/example/patchlib")) {//可以进行热修复的class
+                    //进行插桩，插入单独dex的代码，解决 CLASS_ISPREVERIFIED标志导致的问题
+                    byte[] byteCode = ClassUtil.referHackWhenInit(is);
                     //得到class的md5
                     String md5 = PatchUtil.hex(byteCode);
                     md5Map.put(className, md5);
@@ -204,24 +204,31 @@ public class PatchPlugin implements Plugin<Project> {
     /**
      *
      * @param applicationName
-     * @param file              class文件
+     * @param file              class文件， HotFixDemo/app/build/intermediates/classes/debug/com/faytian/hotfixdemo/MainActivity.class
      * @param dirName
      * @param md5Map
      * @param patchGenerator
      */
     private void processClass(String applicationName, File file, String dirName, Map<String, String> md5Map, PatchGenerator patchGenerator) {
-        byte[] byteCode = PatchUtil.readFile(file);
-        //得到class的md5
-        String md5 = PatchUtil.hex(byteCode);
-        //去除目录名
-        String absolutePath = file.getAbsolutePath();
-        String s = absolutePath.split(dirName)[1];
-        String className = s.substring(1);
-        //application 和 android包下的类无法进行热修复，所以这里屏蔽掉
-        if (className.contains(applicationName) || PatchUtil.isAndroidClass(className)) {
-            return;
+        try {
+            //得到 class文件的输入流
+            FileInputStream fos = new FileInputStream(file);
+            //进行插桩，插入单独dex的代码，解决 CLASS_ISPREVERIFIED标志导致的问题
+            byte[] byteCode = ClassUtil.referHackWhenInit(fos);
+            //得到class的md5
+            String md5 = PatchUtil.hex(byteCode);
+            //去除目录名
+            String absolutePath = file.getAbsolutePath();
+            String s = absolutePath.split(dirName)[1];
+            String className = s.substring(1);
+            //application 和 android包下的类无法进行热修复，所以这里屏蔽掉
+            if (className.contains(applicationName) || PatchUtil.isAndroidClass(className)) {
+                return;
+            }
+            md5Map.put(className, md5);
+            patchGenerator.checkClass(className, md5, byteCode);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        md5Map.put(className, md5);
-        patchGenerator.checkClass(className, md5, byteCode);
     }
 }
