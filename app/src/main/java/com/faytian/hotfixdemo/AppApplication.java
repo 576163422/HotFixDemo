@@ -23,7 +23,7 @@ public class AppApplication extends Application {
         appApplication = this;
         try {
             String dirPath = getCacheDir().getAbsolutePath();
-            String patchDir = dirPath + "/patch.jar";
+            String patchDir = dirPath + "/patch.dex";
             HotFixUtils.installPatch(appApplication, new File(patchDir));
         } catch (Exception e) {
             e.printStackTrace();

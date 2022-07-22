@@ -184,6 +184,7 @@ public class PatchPlugin implements Plugin<Project> {
                     //得到class的md5
                     String md5 = PatchUtil.hex(byteCode);
                     md5Map.put(className, md5);
+                    //对比缓存的md5，不一致则放入补丁
                     patchGenerator.checkClass(className, md5, byteCode);
                     jarOutputStream.write(byteCode);
                 } else {

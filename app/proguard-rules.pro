@@ -20,6 +20,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class com.example.patchlib.**{*;}
--dontwarn android.support.**
+-dontwarn androidx.**
 -ignorewarnings
--keep class android.support.** { *; }
+-keep class androidx.** { *; }
